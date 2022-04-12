@@ -189,7 +189,7 @@ class Webpage extends React.Component {
 
         
         if (this.state.showAddHero) {
-            visibleComponent = <AddHeroForm show={this.state.showAddHero} />;
+            visibleComponent = <AddHeroForm show={this.state.showAddHero} refreshHeroes={this.refreshHeroList}/>;
             newButtonText = "Cancel";
             //this.setState({ selectedHero: "none"});
         }
@@ -229,37 +229,30 @@ class AddHeroForm extends React.Component {
         super(props);
 
         this.state = {
-            hero: {
-                Name: '',
-                Role: '',
-                Overview: '',
-                Health: 1,
-                Armor: 0,
-                Shield: 0,
-                PrimaryFire: {
-                    Name: '',
-                    Description: ''
-                },
-                SecondaryFire: {
-                    Name: '',
-                    Description: ''
-                },
-                Ability1: {
-                    Name: '',
-                    Description: '',
-                    Cooldown: 0
-                },
-                Ability2: {
-                    Name: '',
-                    Description: '',
-                    Cooldown: 0
-                },
-                Ultimate: {
-                    Name: '',
-                    Description: '',
-                    Cooldown: 0
-                },
-            },
+            HeroName: '',
+            Role: '',
+            Overview: '',
+            Health: 1,
+            Armor: 0,
+            Shield: 0,
+
+            PrimaryFireName: '',
+            PrimaryFireDescription: '',
+
+            SecondaryFireName: '',
+            SecondaryFireDescription: '',
+
+            Ability1Name: '',
+            Ability1Description: '',
+            Ability1Cooldown: 0,
+
+            Ability2Name: '',
+            Ability2Description: '',
+            Ability2Cooldown: 0,
+
+            UltimateName: '',
+            UltimateDescription: '',
+            UltimateCost: 0,
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -269,32 +262,87 @@ class AddHeroForm extends React.Component {
     handleSubmit(event) {
         event.preventDefault();
         console.log("Handling submit!");
-        ///fetch(POST)...
+
+        const newHero = {
+            Name: this.state.HeroName,
+            Role: this.state.Role,
+            Overview: this.state.Overview,
+            Health: this.state.Health,
+            Armor: this.state.Armor,
+            Shield: this.state.Shield,
+            PrimaryFire: {
+                Name: this.state.PrimaryFireName,
+                Description: this.state.PrimaryFireDescription,
+            },
+            SecondaryFire: {
+                Name: this.state.SecondaryFireName,
+                Description: this.state.SecondaryFireDescription,
+            },
+            Ability1: {
+                Name: this.state.Ability1Name,
+                Description: this.Ability1Description,
+                Cooldown: this.Ability1Cooldown,
+            },
+            Ability2: {
+                Name: this.state.Ability2Name,
+                Description: this.Ability2Description,
+                Cooldown: this.Ability2Cooldown,
+            },
+            Ultimate: {
+                Name: this.state.UltimateName,
+                Description: this.UltimateDescription,
+                Cooldown: this.UltimateCooldown,
+            }
+        };
+
+        const myHeaders = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        };
+
+        //const myBody = JSON.stringify(newHero);
+        console.log(newHero);
+
+        const init = {
+            method: "POST",
+            headers: myHeaders,
+            body: newHero,
+        };
+
+        fetch(ASPNET_API + 'Heroes/', init)
+            .then(response => response.json())
+            .then(result => {
+                alert(result);
+                this.props.refreshHeroes();
+            });
     }
+
     handleChange(event) {
-        //this.setState({ hero: event.target.hero });
+        this.setState({
+            [event.target.name]: event.target.value,
+        });
     }
 
     render() {
-        const hero = this.state.hero;
+        let hero = this.state.hero;
         return (
             <div className="HeroForm">
                 <h2> Add Hero </h2>
-                <form className="HeroName" onSubmit={this.handleHeroSubmit} onChange={this.handleChange}>
+                <form onSubmit={this.handleSubmit} onChange={this.handleChange}>
                     <table>
                         <tr>
                             <td>
                                 <label> Hero Name: </label>
                             </td>
                             <td>
-                                <input type="text" name="HeroName" placeholder="Hero Name" required/>
+                                <input type="text" id="heroName" name="HeroName" placeholder="Hero Name" value={ this.state.Name } required/>
 
                                 <label>Role:</label>
-                                <input type="radio" id="tank" name="role" value="Tank" required/>
+                                <input type="radio" id="tank" name="Role" value="Tank" required/>
                                 <label for="tank">Tank</label>
-                                <input type="radio" id="damage" name="role" value="Damage" required/>
+                                <input type="radio" id="damage" name="Role" value="Damage" required/>
                                 <label for="damage">Damage</label>
-                                <input type="radio" id="support" name="role" value="Support" required/>
+                                <input type="radio" id="support" name="Role" value="Support" required/>
                                 <label for="support">Support</label>
                             </td>
                         </tr>
@@ -303,7 +351,7 @@ class AddHeroForm extends React.Component {
                                 <label>Overview:</label>
                             </td>
                             <td>
-                                <textarea id="overview" name="overview" rows="3" cols="100" placeholder="Hero overview goes here" required></textarea>
+                                <textarea id="overview" name="Overview" rows="3" cols="100" placeholder="Hero overview goes here" required></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -312,11 +360,11 @@ class AddHeroForm extends React.Component {
                             </td>
                             <td>
                                 <label>Health:</label>
-                                <input type="number" name="health" min="1" placeholder="200" required />
+                                <input type="number" id="health" name="Health" min="1" placeholder="200" required />
                                 <label>Armor:</label>
-                                <input type="number" name="health" min="0" placeholder="100" required />
+                                <input type="number" id="armor" name="Armor" min="0" placeholder="100" required />
                                 <label>Shield:</label>
-                                <input type="number" name="health" min="0" placeholder="0" required />
+                                <input type="number" id="shield" name="Shield" min="0" placeholder="0" required />
                             </td>
                         </tr>
                         <tr>
@@ -327,7 +375,7 @@ class AddHeroForm extends React.Component {
                                 <label> Weapon Name: </label>
                             </td>
                             <td>
-                                <input type="text" name="primaryName" placeholder="Primary Fire Name" required/><br />
+                                <input type="text" id="primaryFireName" name="PrimaryFireName" placeholder="Primary Fire Name" required/><br />
                             </td>
                         </tr>
                         <tr>
@@ -335,7 +383,26 @@ class AddHeroForm extends React.Component {
                                 <label> Description: </label>
                             </td>
                             <td>
-                                <textarea id="overview" name="overview" rows="3" cols="100" placeholder="Weapon description goes here" required></textarea>
+                                <textarea id="primarydescription" name="PrimaryFireDescription" rows="3" cols="100" placeholder="Weapon description goes here" required></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <h4> Secondary Weapon </h4>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Weapon Name: </label>
+                            </td>
+                            <td>
+                                <input type="text" id="secondaryFireName" name="SecondaryFireName" placeholder="Secondary Fire Name" required/><br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Description: </label>
+                            </td>
+                            <td>
+                                <textarea id="secondarydescription" name="SecondaryFireDescription" rows="3" cols="100" placeholder="Weapon description goes here" required></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -346,7 +413,7 @@ class AddHeroForm extends React.Component {
                                 <label> Ability Name: </label>
                             </td>
                             <td>
-                                <input type="text" name="ability1Name" placeholder="Ability 1 Name" required/><br />
+                                <input type="text" id="ability1Name" name="Ability1Name" placeholder="Ability 1 Name" required/><br />
                             </td>
                         </tr>
                         <tr>
@@ -354,7 +421,7 @@ class AddHeroForm extends React.Component {
                                 <label> Description: </label>
                             </td>
                             <td>
-                                <textarea id="overview" name="overview" rows="3" cols="100" placeholder="Ability description goes here" required></textarea><br />
+                                <textarea id="ability1description" name="Ability1Description" rows="3" cols="100" placeholder="Ability description goes here" required></textarea><br />
                             </td>
                         </tr>
                         <tr>
@@ -362,7 +429,61 @@ class AddHeroForm extends React.Component {
                                 <label> Cooldown: </label>
                             </td>
                             <td>
-                                <input type="number" name="ability1Cooldown" min="0" placeholder="8" required/>
+                                <input type="number" id="ability1Cooldown" name="Ability1Cooldown" min="0" placeholder="8" required/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <h4> Ability 2 </h4>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Ability Name: </label>
+                            </td>
+                            <td>
+                                <input type="text" id="ability2Name" name="Ability2Name" placeholder="Ability 2 Name" required/><br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Description: </label>
+                            </td>
+                            <td>
+                                <textarea id="ability2description" name="Ability2Description" rows="3" cols="100" placeholder="Ability description goes here" required></textarea><br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Cooldown: </label>
+                            </td>
+                            <td>
+                                <input type="number" id="ability2Cooldown" name="Ability2Cooldown" min="0" placeholder="8" required/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <h4> Ultimate Ability </h4>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Ability Name: </label>
+                            </td>
+                            <td>
+                                <input type="text" id="ultimateName" name="UltimateName" placeholder="Ultimate Name" required/><br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Description: </label>
+                            </td>
+                            <td>
+                                <textarea id="ultimatedescription" name="UltimateDescription" rows="3" cols="100" placeholder="Ability description goes here" required></textarea><br />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label> Cost: </label>
+                            </td>
+                            <td>
+                                <input type="number" id="ultimateCooldown" name="UlitmateCost" min="0" placeholder="1500" required/>
                             </td>
                         </tr>
                     </table>
